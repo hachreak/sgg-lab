@@ -6,17 +6,14 @@ import tensorflow as tf
 
 from PIL import Image
 from sklearn.manifold import TSNE
-from keras.applications import vgg19
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
 
-from keras.models import Model
-from keras.layers import Dense, Dropout, GlobalAveragePooling2D, \
-        BatchNormalization
 
 from sgg_lab.datasets import pic
 from sgg_lab import datasets as ds
+from sgg_lab.nets import vgg_cls
 
 
 def get_dataset(filenames, epochs, colorMap, batch_size, output_shape):
@@ -40,27 +37,6 @@ def get_dataset(filenames, epochs, colorMap, batch_size, output_shape):
     return shapes
 
 
-def _set_readonly(model, until=None):
-    """Make a model weights readonly."""
-    for layer in model.layers[:until]:
-        layer.trainable = False
-    return model
-
-
-def _classification(model, output_shape):
-    """Add classification layers."""
-    x = model.output
-    x = BatchNormalization()(x)
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(1024, activation='relu')(x)
-    x = Dropout(0.3)(x)
-    x = Dense(512, activation='relu')(x)
-    x = Dropout(0.3)(x)
-    x = Dense(output_shape, activation='softmax')(x)
-
-    return Model(inputs=model.input, outputs=x)
-
-
 def config_tensorflow():
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -71,8 +47,8 @@ path = '/media/hachreak/Magrathea/datasets/pic2018'
 colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
 output_shape = len(pic.semantic_names)
-epochs = 20
-batch_size = 4
+epochs = 40
+batch_size = 8
 
 training = pic.get_filenames(path, 'train')
 validati = pic.get_filenames(path, 'val')
@@ -89,14 +65,10 @@ callback = ModelCheckpoint(
 )
 
 with tf.Session(config=config_tensorflow()):
-    model = vgg19.VGG19(
-        include_top=False, weights='imagenet', input_shape=input_shape
-    )
 
     config_tensorflow()
 
-    model = _set_readonly(model, 18)
-    model = _classification(model, output_shape)
+    model = vgg_cls.get_model(input_shape, output_shape)
     model.compile(
         optimizer=Adam(lr=0.0001),
         loss='categorical_crossentropy',
@@ -110,5 +82,4 @@ with tf.Session(config=config_tensorflow()):
         validation_steps=len(validati) // batch_size,
         callbacks=[callback]
     )
-    import ipdb; ipdb.set_trace()
     print('fine')
