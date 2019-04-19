@@ -104,6 +104,11 @@ def get_objects(filename):
         yield obj
 
 
+def get_relations(stream):
+    """Get relation dictionary."""
+    return {obj['name']: obj['relations'] for obj in stream}
+
+
 def get_filenames(path, type_, random=True):
     img_path = os.path.join(path, 'image', type_)
     instance_path = os.path.join(path, 'segmentation', type_, 'instance')
@@ -120,7 +125,7 @@ def get_filenames(path, type_, random=True):
     } for f in paths]
 
 
-def extract_instances(insLabel, segLabel, oriImg, colorMap):
+def extract_shape(insLabel, segLabel, oriImg, colorMap):
     semantic = np.unique(segLabel)
     semantic = list(semantic[semantic != 0])
     for semanticId in semantic:
@@ -136,16 +141,3 @@ def extract_instances(insLabel, segLabel, oriImg, colorMap):
             except IndexError:
                 # some instance image are wrong!
                 pass
-
-
-def load_shapes(images, colorMap):
-    """Load image and extract from them the shapes and category ids."""
-    for img in images:
-        insImg = cv2.imread(img['instance'], cv2.IMREAD_GRAYSCALE)
-        semanticImg = cv2.imread(img['semantic'], cv2.IMREAD_GRAYSCALE)
-        orig = cv2.imread(img['img'])
-        #  print('read {0}'.format(img['img']))
-        #  yield zip(*extract_instances(
-        #         insImg, semanticImg, orig, colorMap))
-        for img, cat in extract_instances(insImg, semanticImg, orig, colorMap):
-            yield img, cat

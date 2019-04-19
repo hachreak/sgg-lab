@@ -13,8 +13,18 @@ from sgg_lab import datasets as ds
 from sgg_lab.nets import vgg_cls
 
 
+def load_shapes(images, colorMap):
+    """Load image and extract from them the shapes and category ids."""
+    for img in images:
+        insImg = cv2.imread(img['instance'], cv2.IMREAD_GRAYSCALE)
+        semanticImg = cv2.imread(img['semantic'], cv2.IMREAD_GRAYSCALE)
+        orig = cv2.imread(img['img'])
+        for img, cat in pic.extract_shape(insImg, semanticImg, orig, colorMap):
+            yield img, cat
+
+
 def get_dataset(filenames, epochs, colorMap, batch_size, output_shape):
-    shapes = pic.load_shapes(ds.epochs(filenames, epochs), colorMap)
+    shapes = load_shapes(ds.epochs(filenames, epochs), colorMap)
     shapes = ds.stream(ds.apply_to_x(
         lambda x: cv2.resize(x, input_shape[:2])
     ), shapes)
