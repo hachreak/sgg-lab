@@ -1,11 +1,8 @@
 
 import cv2
-import os
 import numpy as np
 import tensorflow as tf
 
-from PIL import Image
-from sklearn.manifold import TSNE
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
@@ -21,19 +18,11 @@ def get_dataset(filenames, epochs, colorMap, batch_size, output_shape):
     shapes = ds.stream(ds.apply_to_x(
         lambda x: cv2.resize(x, input_shape[:2])
     ), shapes)
-    #  shapes = ds.stream(ds.apply_to_x(np.array), shapes)
-    #  shapes = ds.stream(ds.apply_to_y(np.array), shapes)
     shapes = ds.stream(ds.apply_to_y(
         lambda x: to_categorical(x, output_shape)
     ), shapes)
     shapes = ds.stream_batch(
-        shapes,
-        lambda x, y: (
-            np.array(x),
-            #  to_categorical(y.reshape(y.shape + (1,)), len(colorMap))),
-            np.array(y)
-        ),
-        batch_size)
+        shapes, lambda x, y: (np.array(x), np.array(y)), batch_size)
     return shapes
 
 
