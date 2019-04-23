@@ -3,7 +3,6 @@
 
 import json
 import numpy as np
-import cv2
 import os
 
 
@@ -122,6 +121,7 @@ def get_filenames(path, type_, random=True):
             instance_path, f.replace('.jpg', '.png')),
         "semantic": os.path.join(
             semantic_path, f.replace('.jpg', '.png')),
+        "name": f,
     } for f in paths]
 
 
@@ -133,11 +133,11 @@ def extract_shape(insLabel, segLabel, oriImg, colorMap):
         thisCateInsImg[segLabel != semanticId] = 0
         insId = np.unique(thisCateInsImg)
         insId = list(insId[insId != 0])
-        for i, ins in enumerate(insId):
+        for ins in insId:
             visualize_ins = np.zeros_like(oriImg)
             try:
                 visualize_ins[insLabel == ins, ...] = colorMap[semanticId + 1]
-                yield visualize_ins, semanticId
+                yield visualize_ins, semanticId, ins
             except IndexError:
                 # some instance image are wrong!
                 pass

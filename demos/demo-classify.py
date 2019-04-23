@@ -19,8 +19,9 @@ def load_shapes(images, colorMap):
         insImg = cv2.imread(img['instance'], cv2.IMREAD_GRAYSCALE)
         semanticImg = cv2.imread(img['semantic'], cv2.IMREAD_GRAYSCALE)
         orig = cv2.imread(img['img'])
-        for img, cat in pic.extract_shape(insImg, semanticImg, orig, colorMap):
-            yield img, cat
+        for img, sem, ins in pic.extract_shape(
+                insImg, semanticImg, orig, colorMap):
+            yield img, sem
 
 
 def get_dataset(filenames, epochs, colorMap, batch_size, output_shape):
@@ -32,7 +33,7 @@ def get_dataset(filenames, epochs, colorMap, batch_size, output_shape):
         lambda x: to_categorical(x, output_shape)
     ), shapes)
     shapes = ds.stream_batch(
-        shapes, lambda x, y: (np.array(x), np.array(y)), batch_size)
+        shapes, lambda x, y: [np.array(x), np.array(y)], batch_size)
     return shapes
 
 
