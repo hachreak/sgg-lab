@@ -16,14 +16,16 @@ from sgg_lab.nets import vgg_cls
 
 
 def _dataset_lenght(relations):
-    fuu = []
+    counter = 0
     for x in relations.values():
+        rels = []
         for y in x:
             if y['object'] < y['subject']:
-                fuu.append((y['object'], y['subject'], y['relation']))
+                rels.append((y['object'], y['subject'], y['relation']))
             else:
-                fuu.append((y['subject'], y['object'], y['relation']))
-    return len(set(fuu))
+                rels.append((y['subject'], y['object'], y['relation']))
+        counter += len(set(rels))
+    return counter
 
 
 def _get_relation(sbj_id, obj_id, relations):
@@ -80,7 +82,7 @@ colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
 output_shape = len(pic.semantic_names)
 epochs = 40
-batch_size = 8
+batch_size = 16
 
 training = pic.get_filenames(path, 'train')
 validati = pic.get_filenames(path, 'val')
@@ -107,6 +109,7 @@ callback = ModelCheckpoint(
 )
 
 #  fuu = next(shapes)
+#  import ipdb; ipdb.set_trace()
 with tf.Session(config=config_tensorflow()):
 
     config_tensorflow()

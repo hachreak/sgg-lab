@@ -7,13 +7,13 @@ from keras.layers import Dense, Dropout, GlobalAveragePooling2D, \
         BatchNormalization
 
 
-def get_model(input_shape, output_shape):
+def get_model(input_shape, output_shape, last_activation='softmax'):
     """Get model ready to use."""
     model = vgg19.VGG19(
         include_top=False, weights='imagenet', input_shape=input_shape
     )
     model = _set_readonly(model, 18)
-    model = _classification(model, output_shape)
+    model = _classification(model, output_shape, last_activation)
     return model
 
 
@@ -24,7 +24,7 @@ def _set_readonly(model, until=None):
     return model
 
 
-def _classification(model, output_shape):
+def _classification(model, output_shape, last_activation='softmax'):
     """Add classification layers."""
     x = model.output
     x = BatchNormalization()(x)
@@ -33,6 +33,6 @@ def _classification(model, output_shape):
     x = Dropout(0.3)(x)
     x = Dense(512, activation='relu')(x)
     x = Dropout(0.3)(x)
-    x = Dense(output_shape, activation='softmax')(x)
+    x = Dense(output_shape, activation=last_activation)(x)
 
     return Model(inputs=model.input, outputs=x)
