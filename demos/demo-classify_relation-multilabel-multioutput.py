@@ -8,7 +8,6 @@ import os
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
-from keras import backend as K, losses
 
 from sgg_lab.datasets import pic
 from sgg_lab import datasets as ds
@@ -74,14 +73,14 @@ def get_dataset(filenames, relations, epochs, colorMap, batch_size,
             [to_categorical(xv, output_shape) for xv in x]
         ).sum(axis=0)
     ), shapes)
-    #  shapes = ds.stream(ds.apply_to_y(generate_neg), shapes)
+    #  shapes = ds.stream(ds.apply_to_y(generate_y), shapes)
     shapes = ds.stream_batch(
         shapes,
-        lambda x, y: [np.array(x), generate_neg(np.array(y))], batch_size)
+        lambda x, y: [np.array(x), generate_y(np.array(y))], batch_size)
     return shapes
 
 
-def generate_neg(y):
+def generate_y(y):
     """Generate negative examples."""
     #  # get positive indices
     #  pos_indices = np.where(y == 1)[0]
@@ -105,26 +104,13 @@ def config_tensorflow():
     return config
 
 
-#  def loss_fun(y_true, y_pred):
-def loss_fun(y_pred, y_true):
-    #  # choose X pos, X neg
-    #  condition = K.not_equal(y_true, -1)
-    #  indices = tf.where(condition)
-    #  # extract sub-matrix
-    #  yp = tf.gather_nd(y_pred, indices)
-    #  yt = tf.gather_nd(y_true, indices)
-    #  return losses.binary_crossentropy(yt, yp)
-    #  import ipdb; ipdb.set_trace()
-    return losses.binary_crossentropy(y_true, y_pred)
-
-
 path = '/media/hachreak/Magrathea/datasets/pic2018'
 colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
 output_shape = len(pic.semantic_names)
 epochs = 40
 batch_size = 8
-verbose = 2
+verbose = 1
 
 training = pic.get_filenames(path, 'train')
 validati = pic.get_filenames(path, 'val')
