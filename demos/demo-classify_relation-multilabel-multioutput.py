@@ -62,18 +62,11 @@ def get_dataset(filenames, relations, epochs, colorMap, batch_size,
     shapes = ds.stream(ds.apply_to_x(
         lambda x: cv2.resize(x, input_shape[:2])
     ), shapes)
-    #  def fu(x):
-    #      ba = list(np.array(
-    #          [to_categorical(xv, output_shape) for xv in x]
-    #      ).sum(axis=0))
-    #      import ipdb; ipdb.set_trace()
-    #      return ba
     shapes = ds.stream(ds.apply_to_y(
         lambda x: np.array(
             [to_categorical(xv, output_shape) for xv in x]
         ).sum(axis=0)
     ), shapes)
-    #  shapes = ds.stream(ds.apply_to_y(generate_y), shapes)
     shapes = ds.stream_batch(
         shapes,
         lambda x, y: [np.array(x), generate_y(np.array(y))], batch_size)
@@ -82,19 +75,6 @@ def get_dataset(filenames, relations, epochs, colorMap, batch_size,
 
 def generate_y(y):
     """Generate negative examples."""
-    #  # get positive indices
-    #  pos_indices = np.where(y == 1)[0]
-    #  # generate negative indices
-    #  rands = list(range(0, y.shape[0]))
-    #  for i, index in enumerate(pos_indices):
-    #      del rands[index - i]
-    #  neg_indices = np.random.choice(rands, size=pos_indices.shape[0])
-    # convert zero values to -1
-    #  y[np.where(y == 0)[0]] = -1
-    #  # and set negative as zero
-    #  y[neg_indices] = 0
-    #  import ipdb; ipdb.set_trace()
-    #  return [np.array([v]) for v in y.tolist()]
     return [y[:, i] for i in range(y.shape[1])]
 
 
@@ -107,9 +87,11 @@ def config_tensorflow():
 path = '/media/hachreak/Magrathea/datasets/pic2018'
 colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
-output_shape = len(pic.semantic_names)
+output_shape = len(pic.relationships(os.path.join(
+    path, 'categories_list', 'relation_categories.json'
+)))
 epochs = 40
-batch_size = 8
+batch_size = 16
 verbose = 1
 
 training = pic.get_filenames(path, 'train')
@@ -129,11 +111,11 @@ shapes_val = get_dataset(
     input_shape, output_shape)
 
 callback = ModelCheckpoint(
-    filepath="model-{epoch:02d}-{val_acc:.2f}.hdf5",
-    monitor="val_acc",
+    filepath="model-{epoch:02d}-{val_loss:.2f}.hdf5",
+    monitor="val_loss",
     save_best_only=True,
     save_weights_only=False,
-    mode="max", verbose=1
+    mode="min", verbose=1
 )
 
 #  fuu = next(shapes)

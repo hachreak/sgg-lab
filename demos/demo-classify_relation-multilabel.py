@@ -82,17 +82,17 @@ def get_dataset(filenames, relations, epochs, colorMap, batch_size,
 
 def generate_neg(y):
     """Generate negative examples."""
-    # get positive indices
-    pos_indices = np.where(y == 1)[0]
-    # generate negative indices
-    rands = list(range(0, y.shape[0]))
-    for i, index in enumerate(pos_indices):
-        del rands[index - i]
-    neg_indices = np.random.choice(rands, size=pos_indices.shape[0])
+    #  # get positive indices
+    #  pos_indices = np.where(y == 1)[0]
+    #  # generate negative indices
+    #  rands = list(range(0, y.shape[0]))
+    #  for i, index in enumerate(pos_indices):
+    #      del rands[index - i]
+    #  neg_indices = np.random.choice(rands, size=pos_indices.shape[0])
     # convert zero values to -1
     y[np.where(y == 0)[0]] = -1
-    # and set negative as zero
-    y[neg_indices] = 0
+    #  # and set negative as zero
+    #  y[neg_indices] = 0
     return y
 
 
@@ -102,20 +102,25 @@ def config_tensorflow():
     return config
 
 
-def loss_fun(y_true, y_pred):
-    # choose X pos, X neg
-    condition = K.not_equal(y_true, -1)
-    indices = tf.where(condition)
-    # extract sub-matrix
-    yp = tf.gather_nd(y_pred, indices)
-    yt = tf.gather_nd(y_true, indices)
-    return losses.binary_crossentropy(yt, yp)
+#  def loss_fun(y_true, y_pred):
+def loss_fun(y_pred, y_true):
+    #  # choose X pos, X neg
+    #  condition = K.not_equal(y_true, -1)
+    #  indices = tf.where(condition)
+    #  # extract sub-matrix
+    #  yp = tf.gather_nd(y_pred, indices)
+    #  yt = tf.gather_nd(y_true, indices)
+    #  return losses.binary_crossentropy(yt, yp)
+    #  import ipdb; ipdb.set_trace()
+    return losses.binary_crossentropy(y_true, y_pred)
 
 
 path = '/media/hachreak/Magrathea/datasets/pic2018'
 colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
-output_shape = len(pic.semantic_names)
+output_shape = len(pic.relationships(os.path.join(
+    path, 'categories_list', 'relation_categories.json'
+)))
 epochs = 40
 batch_size = 16
 
@@ -151,7 +156,7 @@ with tf.Session(config=config_tensorflow()):
 
     model = vgg_cls.get_model(input_shape, output_shape, 'sigmoid')
     model.compile(
-        optimizer=Adam(lr=0.0001),
+        optimizer=Adam(lr=0.00001),
         loss=loss_fun,
         metrics=['accuracy']
     )
@@ -161,6 +166,6 @@ with tf.Session(config=config_tensorflow()):
         epochs=epochs,
         validation_data=shapes_val,
         validation_steps=_dataset_lenght(relations_val) // batch_size,
-        callbacks=[callback]
+        callbacks=[callback], verbose=2
     )
     print('fine')

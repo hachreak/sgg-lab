@@ -80,7 +80,9 @@ def config_tensorflow():
 path = '/media/hachreak/Magrathea/datasets/pic2018'
 colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
-output_shape = len(pic.semantic_names)
+output_shape = len(pic.relationships(os.path.join(
+    path, 'categories_list', 'relation_categories.json'
+)))
 epochs = 40
 batch_size = 16
 
