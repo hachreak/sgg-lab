@@ -8,6 +8,7 @@ import os
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
+from keras.callbacks import LambdaCallback
 
 from sgg_lab.datasets import pic
 from sgg_lab import datasets as ds
@@ -84,6 +85,12 @@ def config_tensorflow():
     return config
 
 
+def average_acc(batch, logs):
+    print('\nAverage: {0}'.format(
+        np.average([v for k, v in logs.items() if k.endswith('accuracy')])
+    ))
+
+
 path = '/media/hachreak/Magrathea/datasets/pic2018'
 colorMap = np.load('segColorMap.npy')
 input_shape = (300, 300, 3)
@@ -118,6 +125,7 @@ callback = ModelCheckpoint(
     mode="min", verbose=1
 )
 
+
 #  fuu = next(shapes)
 #  import ipdb; ipdb.set_trace()
 with tf.Session(config=config_tensorflow()):
@@ -128,7 +136,7 @@ with tf.Session(config=config_tensorflow()):
     model.compile(
         optimizer=Adam(lr=0.0001),
         loss=["binary_crossentropy" for i in range(output_shape)],
-        metrics=['accuracy']
+        metrics=['binary_accuracy']
     )
     model.fit_generator(
         shapes,
@@ -136,6 +144,7 @@ with tf.Session(config=config_tensorflow()):
         epochs=epochs,
         validation_data=shapes_val,
         validation_steps=_dataset_lenght(relations_val) // batch_size,
-        callbacks=[callback], verbose=verbose
+        callbacks=[callback, LambdaCallback(on_batch_end=average_acc)],
+        verbose=verbose
     )
     print('fine')
