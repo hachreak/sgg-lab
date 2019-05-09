@@ -2,7 +2,7 @@
 """Datasets."""
 
 import numpy as np
-import cv2
+import json
 
 
 def epochs(filenames, epochs=1):
@@ -99,22 +99,8 @@ def apply_to_keys(fun, src1, src2, dst):
     return f
 
 
-def resize_img(input_shape, img_key, bbox_key):
-    i_width, i_height = input_shape[-3:-1]
-
-    def f(value):
-        width, height = value[img_key].shape[-3:-1]
-        # resize img
-        value[img_key] = cv2.resize(value[img_key], (i_height, i_width))
-        # resize bbox
-        value[bbox_key][:, 0] = \
-            value[bbox_key][:, 0] * (i_width / float(width))
-        value[bbox_key][:, 1] = \
-            value[bbox_key][:, 1] * (i_height / float(height))
-        value[bbox_key][:, 2] = \
-            value[bbox_key][:, 2] * (i_width / float(width))
-        value[bbox_key][:, 3] = \
-            value[bbox_key][:, 3] * (i_height / float(height))
-        return value
-
-    return f
+def load_json(filename):
+    """Load json file."""
+    with open(filename) as f:
+        data = json.load(f)
+    return data

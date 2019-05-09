@@ -54,6 +54,7 @@ setup(
     keywords='machine learning',
     packages=find_packages(),
     install_requires=[
+        'pycocotools>=2.0.0',
         #  'click>=7.0',
         #  # FIXME see keras-vis#141 keras-vis#119
         #  # install from git

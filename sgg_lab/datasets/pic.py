@@ -1,22 +1,15 @@
 
 """PIC 2018 dataset."""
 
-import json
 import numpy as np
 import os
+
+from . import load_json
 
 
 def relationships(path):
     """Get relationship names."""
-    return list(get_objects(path))
-
-
-def get_objects(filename):
-    with open(filename, 'r') as f:
-        objs = json.load(f)
-
-    for obj in objs:
-        yield obj
+    return load_json(path)
 
 
 def get_relations(stream):
