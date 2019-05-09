@@ -3,7 +3,7 @@
 
 #  import xml.etree.ElementTree as ET
 #  import os
-#  import numpy as np
+import numpy as np
 
 from copy import deepcopy
 
@@ -66,3 +66,28 @@ def ids2names(annotations, verbs, coco=None):
                 pass
         res.append(ann)
     return res
+
+
+def get_instance_segmented(subject, coco):
+    """Get a subject/object segmentation inside the image."""
+    # get mask and color
+    img = coco.annToMask(subject).copy()
+    r, g, b = _get_color(subject['category_id'])
+    # apply color to a RGB mask
+    img = np.repeat(img, 3, axis=1).reshape(img.shape + (3,))
+    img = np.transpose(img, (2, 0, 1))
+    img[0][img[0] == 1] = r
+    img[1][img[1] == 1] = g
+    img[2][img[2] == 1] = b
+    img = np.transpose(img, (1, 2, 0))
+    return img
+
+
+def _get_color(category_id):
+    """Get unique color by category id."""
+    red = category_id % 255
+    channel_2 = (category_id // 255)
+    green = channel_2 % 255
+    channel_3 = (channel_2 // 255)
+    blue = channel_3 % 255
+    return red, green, blue
