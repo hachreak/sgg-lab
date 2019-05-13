@@ -115,3 +115,9 @@ def load_csv(filename, skip_headers=True):
             next(reader)
         for row in reader:
             yield row
+
+
+def save_json(filename, to_write):
+    """Save stream in a json file."""
+    with open(filename, 'w') as f:
+        json.dump(to_write, f)

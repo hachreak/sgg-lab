@@ -6,7 +6,7 @@ import os
 from copy import deepcopy
 from collections import defaultdict
 
-from . import load_csv
+from . import load_csv, save_json
 
 
 #  OBJS_LABELS = 'challenge-2019-classes-description-500.csv'
@@ -41,11 +41,11 @@ def get_relationship_triplets(filename):
 
 def get_mask_image(images_path):
     """Convert in a image file."""
-    filenames = os.listdir(images_path)
+    filenames = {f.rsplit('_', 1)[0]: f for f in os.listdir(images_path)}
 
     def f(image_id, label_id):
         base_name = '{0}_{1}'.format(image_id, label_id.replace('/', ''))
-        return filter(lambda x: x.startswith(base_name), filenames)[0]
+        return filenames[base_name]
     return f
 
 
@@ -59,12 +59,17 @@ def stream_vrds(vrds, get_image_path):
                 try:
                     o['path'] = get_image_path(k, o['label'])
                     founds += 1
-                except IndexError:
+                except KeyError:
                     pass
             if len(pair['objects']) == founds:
                 pairs.append(pair)
         if len(pairs) > 0:
             yield k, pairs
+
+
+def stream_vrds_to_file(filename, stream):
+    """Save stream vrds inside json file."""
+    save_json(filename, {k: v for (k, v) in stream})
 
 
 #  def get_vrd(filename):
