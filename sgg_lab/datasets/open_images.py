@@ -13,7 +13,9 @@ from . import load_csv, save_json
 #  OBJS_LABELS_SEGM = 'challenge-2019-classes-description-segmentable.csv'
 
 VRD_OBJS_LABELS = 'challenge-2019-classes-vrd.csv'
+VRD_RELS_LABELS = 'challenge-2019-relationships-description.csv'
 VRD_TRAIN = 'challenge-2019-train-vrd.csv'
+VRD_VALID = 'challenge-2019-validation-vrd.csv'
 
 OD_BBOX_TRAIN = 'challenge-2019-train-detection-bbox.csv'
 
@@ -113,8 +115,12 @@ def stream_vrds_to_file(filename, stream):
 def translate(filename):
     """Translate label."""
     labels = {k: v for [k, v] in load_csv(filename, skip_headers=False)}
+    keys = labels.keys()
 
     def f(label_id):
         return labels[label_id]
 
-    return f
+    def index(label_id):
+        return keys.index(label_id)
+
+    return f, index, len(labels.keys())
