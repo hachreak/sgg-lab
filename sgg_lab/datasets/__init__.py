@@ -121,3 +121,30 @@ def save_json(filename, to_write):
     """Save stream in a json file."""
     with open(filename, 'w') as f:
         json.dump(to_write, f)
+
+
+def get_color(count):
+    """Transform a index into a color."""
+    step = (255**3) / float(count)
+
+    def f(index):
+        id_ = int(index * step)
+        red = id_ % 255
+        channel_2 = (id_ // 255)
+        green = channel_2 % 255
+        channel_3 = (channel_2 // 255)
+        blue = channel_3 % 255
+        return red, green, blue
+    return f
+
+
+def colorize(img, rgb):
+    """Colorize a image."""
+    r, g, b = rgb
+    # apply color to a RGB mask
+    img = np.transpose(img, (2, 0, 1))
+    img[0][img[0] > 0] = r
+    img[1][img[1] > 0] = g
+    img[2][img[2] > 0] = b
+    img = np.transpose(img, (1, 2, 0))
+    return img
