@@ -3,6 +3,7 @@
 
 import numpy as np
 import json
+import csv
 
 
 def epochs(filenames, epochs=1):
@@ -104,3 +105,13 @@ def load_json(filename):
     with open(filename) as f:
         data = json.load(f)
     return data
+
+
+def load_csv(filename, skip_headers=True):
+    """Load json file."""
+    with open(filename) as f:
+        reader = csv.reader(f)
+        if skip_headers:
+            next(reader)
+        for row in reader:
+            yield row
