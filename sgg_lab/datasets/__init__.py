@@ -6,9 +6,16 @@ import json
 import csv
 
 
-def epochs(filenames, epochs=1):
+def randomize(objects):
+    import random
+    random.shuffle(objects)
+    return objects
+
+
+def epochs(filenames, epochs=1, random=True):
     """Repeat filenames epochs times."""
     for _ in range(0, epochs):
+        filenames = randomize(filenames)
         for name in filenames:
             yield name
 
