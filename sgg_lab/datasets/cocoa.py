@@ -1,5 +1,8 @@
 
-"""Coco-a dataset."""
+"""Coco-a dataset.
+
+@deprecated in favor of Open Images Dataset V5
+"""
 
 #  import xml.etree.ElementTree as ET
 #  import os
@@ -57,11 +60,11 @@ def ids2names(annotations, verbs, coco=None):
         }
         if coco:
             try:
-                ann['n_subject'] = coco.loadAnns([ann['subject_id']])[0]
+                ann['n_subject'] = coco.loadAnns(ann['subject_id'])[0]
             except KeyError:
                 pass
             try:
-                ann['n_object'] = coco.loadAnns([ann['object_id']])[0]
+                ann['n_object'] = coco.loadAnns(ann['object_id'])[0]
             except KeyError:
                 pass
         res.append(ann)
@@ -91,3 +94,22 @@ def _get_color(category_id):
     channel_3 = (channel_2 // 255)
     blue = channel_3 % 255
     return red, green, blue
+
+
+def get_subcoco(ann_path, coco_path):
+    """Get sub dataset."""
+    ann = get_annotations(ann_path)
+    coco = load_json(coco_path)
+    # get annotation ids to extract from coco
+    image_ids = set([a['image_id'] for a in ann])
+    #  cat_ids = set([a['category_id'] for a in ann])
+    #      [a['subject_id'] for a in ann] +
+    #      [a['object_id'] for a in ann if a['object_id'] != -1]
+    #  )
+    c_images = [i for i in coco['images'] if i['id'] in image_ids]
+    c_ann = [i for i in coco['annotations'] if i['image_id'] in image_ids]
+
+    import ipdb; ipdb.set_trace()
+    coco['images'] = c_images
+    coco['annotations'] = c_ann
+    return coco
