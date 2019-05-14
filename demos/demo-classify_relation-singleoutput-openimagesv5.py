@@ -75,8 +75,8 @@ def average_acc(batch, logs):
 path = '/media/hachreak/Magrathea/datasets/open-images-v5'
 #  vrd_path = os.path.join(path, '2019', open_images.VRD_TRAIN)
 path_obj_classes = os.path.join(path, '2019', oi.VRD_OBJS_LABELS)
-path_valid = os.path.join(path, 'challenge-2019-validation-masks-0')
-path_train = os.path.join(path, 'challenge-2019-train-masks-0')
+path_valid = os.path.join(path, 'challenge-2019-validation-masks')
+path_train = os.path.join(path, 'challenge-2019-train-masks')
 dirname = __file__.rsplit('/', 1)[0]
 
 translate_objs, index_objs, count_objs = oi.translate(

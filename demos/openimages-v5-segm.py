@@ -16,9 +16,9 @@ def get_stream(base, subdir, filename):
 
 BASE = '/media/hachreak/Magrathea/datasets/open-images-v5'
 
-train = get_stream(BASE, 'challenge-2019-train-masks-0', open_images.VRD_TRAIN)
+train = get_stream(BASE, 'challenge-2019-train-masks', open_images.VRD_TRAIN)
 open_images.stream_vrds_to_file(__file__.replace('.py', '_train.json'), train)
 
 valid = get_stream(
-    BASE, 'challenge-2019-validation-masks-0', open_images.VRD_VALID)
+    BASE, 'challenge-2019-validation-masks', open_images.VRD_VALID)
 open_images.stream_vrds_to_file(__file__.replace('.py', '_valid.json'), valid)
