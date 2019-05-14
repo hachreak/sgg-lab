@@ -120,8 +120,8 @@ train_dataset = get_dataset(
     train_list, epochs, input_shape, output_shape)
 
 callback = ModelCheckpoint(
-    filepath="model-{epoch:02d}-{val_acc:.2f}.hdf5",
-    monitor="val_acc",
+    filepath="model-{epoch:02d}-{val_binary_accuracy:.2f}.hdf5",
+    monitor="val_binary_accuracy",
     save_best_only=True,
     save_weights_only=False,
     mode="max", verbose=1
