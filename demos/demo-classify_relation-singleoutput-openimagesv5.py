@@ -28,20 +28,18 @@ def foreach(dataset, basepath, color, label):
             # get colors
             c1 = color(pair['objects'][0]['label'])
             c2 = color(pair['objects'][1]['label'])
-            # merge colorized shapes
-            #  img1 = ds.colorize(cv2.imread(obj1), color(l1))
-            #  img2 = ds.colorize(cv2.imread(obj2), color(l2))
-            #  img = img1 + img2
             # get label
             idx = label(pair['relationship'])
             yield ((obj1, c1), (obj2, c2)), idx
 
 
-def get_dataset(dataset, epochs, input_shape, output_shape):
+def get_dataset(dataset, epochs, input_shape, output_shape, colored=True):
     shapes = ds.epochs(dataset, epochs)
     shapes = ds.stream(ds.apply_to_x(ds.apply_to_xn(
-        lambda x: ds.colorize(cv2.imread(x[0]), x[1])
+        lambda x: ds.colorize(
+            cv2.imread(x[0]), x[1] if colored else [255, 0, 0])
     )), shapes)
+    #  shapes = ds.stream(ds.apply_to_x(check), shapes)
     shapes = ds.stream(ds.apply_to_x(sum), shapes)
     shapes = ds.stream(ds.apply_to_x(
         lambda x: cv2.resize(x, input_shape[:2])
@@ -73,7 +71,7 @@ def average_acc(batch, logs):
 
 
 path = '/media/hachreak/Magrathea/datasets/open-images-v5'
-#  vrd_path = os.path.join(path, '2019', open_images.VRD_TRAIN)
+
 path_obj_classes = os.path.join(path, '2019', oi.VRD_OBJS_LABELS)
 path_valid = os.path.join(path, 'challenge-2019-validation-masks')
 path_train = os.path.join(path, 'challenge-2019-train-masks')
@@ -114,10 +112,12 @@ train_list = list(foreach(
 ))
 
 valid_dataset = get_dataset(
-    val_list, epochs, input_shape, output_shape)
+    val_list, epochs, input_shape, output_shape
+)
 
 train_dataset = get_dataset(
-    train_list, epochs, input_shape, output_shape)
+    train_list, epochs, input_shape, output_shape
+)
 
 callback = ModelCheckpoint(
     filepath="model-{epoch:02d}-{val_binary_accuracy:.2f}.hdf5",

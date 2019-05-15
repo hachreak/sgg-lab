@@ -1,5 +1,8 @@
 
-"""Build training file."""
+"""Build training/validation file.
+
+Not all segmentation images has corresponding relationships and viceversa.
+"""
 
 import os
 
