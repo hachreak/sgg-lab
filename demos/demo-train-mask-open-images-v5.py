@@ -1,6 +1,8 @@
 
 """Train Mask R-CNN on Open Images Dataset."""
 
+import cv2
+import numpy as np
 import os
 
 from mrcnn.config import Config
@@ -65,18 +67,31 @@ dataset_train = oic.OIDataset(
 )
 dataset_train.prepare()
 
+#  action = 'training'
+action = 'inference'
 
-model = modellib.MaskRCNN(mode="training", config=config, model_dir=model_dir)
-model.load_weights(
-    path_coco_weigths, by_name=True,
-    exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"]
-)
+model = modellib.MaskRCNN(mode=action, config=config, model_dir=model_dir)
 
-model.train(
-    dataset_train, dataset_valid,
-    learning_rate=config.LEARNING_RATE,
-    epochs=epochs,
-    layers='heads'
-)
+if action == 'training':
+    model.load_weights(
+        path_coco_weigths, by_name=True,
+        exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox",
+                 "mrcnn_mask"]
+    )
+
+    model.train(
+        dataset_train, dataset_valid,
+        learning_rate=config.LEARNING_RATE,
+        epochs=epochs,
+        layers='heads'
+    )
+
+else:
+    weights = 'logs/open-images-v520190516T1742/mask_rcnn_open-images-v5_0007.h5'
+    img_path = '/media/hachreak/Magrathea/datasets/open-images-v5/validation/53921fc4d72f04d6.jpg'
+    model.load_weights(weights, by_name=True)
+    res = model.detect(np.array([cv2.imread(img_path)]))
+    import ipdb; ipdb.set_trace()
+    print(res)
 
 print('fine')
