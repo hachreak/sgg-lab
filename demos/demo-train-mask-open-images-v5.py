@@ -20,7 +20,6 @@ path_image_mask_train = os.path.join(path, 'challenge-2019-train-masks')
 path_image_mask_valid = os.path.join(path, 'challenge-2019-validation-masks')
 
 model_dir = './logs'
-path_coco_weigths = 'mask_rcnn_coco.h5'
 
 batch_size = 64
 epochs = 50
@@ -67,14 +66,17 @@ dataset_train = oic.OIDataset(
 )
 dataset_train.prepare()
 
-#  action = 'training'
-action = 'inference'
+action = 'training'
+#  action = 'inference'
+
+weights = 'logs/open-images-v520190516T1742/mask_rcnn_open-images-v5_0007.h5'
+#  weights = 'mask_rcnn_coco.h5'
 
 model = modellib.MaskRCNN(mode=action, config=config, model_dir=model_dir)
 
 if action == 'training':
     model.load_weights(
-        path_coco_weigths, by_name=True,
+        weights, by_name=True,
         exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox",
                  "mrcnn_mask"]
     )
@@ -87,11 +89,11 @@ if action == 'training':
     )
 
 else:
-    weights = 'logs/open-images-v520190516T1742/mask_rcnn_open-images-v5_0007.h5'
     img_path = '/media/hachreak/Magrathea/datasets/open-images-v5/validation/53921fc4d72f04d6.jpg'
     model.load_weights(weights, by_name=True)
     res = model.detect(np.array([cv2.imread(img_path)]))
-    import ipdb; ipdb.set_trace()
+    import ipdb
+    ipdb.set_trace()
     print(res)
 
 print('fine')
