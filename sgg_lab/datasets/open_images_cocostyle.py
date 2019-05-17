@@ -15,6 +15,13 @@ SEGM_TRAIN = 'challenge-2019-train-segmentation-masks.csv'
 SEGM_VALID = 'challenge-2019-validation-segmentation-masks.csv'
 
 
+def count_images(path, types=['.jpg']):
+    """Count how many images inside the dataset."""
+    return len([
+        f for f in os.listdir(path) if os.path.splitext(f)[1] in types
+    ])
+
+
 def get_segmentation_masks(filename):
     """Get visual relationships."""
     segm = defaultdict(dict)
@@ -61,23 +68,25 @@ class OIDataset(Dataset):
         self._class_names = [c['class_name'] for c in classes]
 
     def load_image(self, image_id):
-        return cv2.imread(get_image_path(
-            self._image_path, self.image_info[image_id]['id'])
+        img_path = get_image_path(
+            self._image_path, self.image_info[image_id]['id']
         )
+        #  print("img path: {0}".format(img_path))
+        return cv2.imread(img_path)
 
     def load_mask(self, image_id):
-        print(image_id)
         key = self.image_info[image_id]['id']
-        print("key: ", key)
         # get masks and class ids
         masks = []
         ids = []
+        #  import ipdb; ipdb.set_trace()
         for k, v in self._dataset[key].items():
-            print("get: ", os.path.join(self._mask_path, v['path']))
+            mask_path = os.path.join(self._mask_path, v['path'])
+            #  print("mask path: ", os.path.join(self._mask_path, v['path']))
             masks.append(cv2.imread(
-                os.path.join(self._mask_path, v['path'])
-            ).astype(np.bool))
+                mask_path, cv2.IMREAD_GRAYSCALE
+            ))
             ids.append(self._class_names.index(k))
         masks = np.stack(masks, axis=-1)
         # return masks and class id for each instance
-        return masks, np.array(ids)
+        return masks.astype(np.bool), np.array(ids)

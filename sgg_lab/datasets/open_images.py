@@ -19,8 +19,7 @@ VRD_VALID = 'challenge-2019-validation-vrd.csv'
 
 OD_BBOX_TRAIN = 'challenge-2019-train-detection-bbox.csv'
 
-SEGM_TRAIN = 'challenge-2019-train-segmentation-masks.csv'
-SEGM_VALID = 'challenge-2019-validation-segmentation-masks.csv'
+OD_CLASSES = 'class-descriptions-boxable.csv'
 
 
 def get_relationship_triplets(filename):

@@ -12,37 +12,48 @@ path = '/media/hachreak/Magrathea/datasets/open-images-v5'
 path_classes = os.path.join(path, oi.OD_CLASSES)
 path_mask_train = os.path.join(path, oic.SEGM_TRAIN)
 path_mask_valid = os.path.join(path, oic.SEGM_VALID)
-path_image = os.path.join(path, 'train_0-4')
-path_image_mask_train = os.path.join(path, 'challenge-2019-validation-masks')
+path_image_train = os.path.join(path, 'train')
+path_image_valid = os.path.join(path, 'validation')
+path_image_mask_train = os.path.join(path, 'challenge-2019-train-masks')
 path_image_mask_valid = os.path.join(path, 'challenge-2019-validation-masks')
 
 model_dir = './logs'
 path_coco_weigths = 'mask_rcnn_coco.h5'
 
-#  tsl, index, output_shape = oi.translate(path_classes)
+batch_size = 64
+epochs = 50
+
+classes = oic.get_classes(path_classes)
+
+count_train = oic.count_images(path_image_train)
+count_valid = oic.count_images(path_image_valid)
 
 
 class OICConfig(Config):
 
     NAME = 'open-images-v5'
 
-    IMAGE_MIN_DIM = 300
-    IMAGE_MAX_DIM = 300
+    NUM_CLASSES = len(classes) + 1
+
+    IMAGES_PER_GPU = 1
+
+    IMAGE_MIN_DIM = 320
+    IMAGE_MAX_DIM = 320
 
     #  RPN_ANCHOR_SCALES = (8, 16, 32, 64, 128)
     #  TRAIN_ROIS_PER_IMAGE = 32
 
-    STEPS_PER_EPOCH = 8
-    VALIDATION_STEPS = 8
+    BATCH_SIZE = batch_size
+
+    STEPS_PER_EPOCH = count_train // batch_size
+    VALIDATION_STEPS = count_valid // batch_size
 
 
 config = OICConfig()
 config.display()
 
-classes = oic.get_classes(path_classes)
-
 dataset_valid = oic.OIDataset(
-    path_mask_valid, path_image, path_image_mask_valid, classes
+    path_mask_valid, path_image_valid, path_image_mask_valid, classes
 )
 dataset_valid.prepare()
 
@@ -50,7 +61,7 @@ dataset_valid.prepare()
 #  fuu = next(dataset_valid)
 
 dataset_train = oic.OIDataset(
-    path_mask_train, path_image, path_image_mask_train, classes
+    path_mask_train, path_image_train, path_image_mask_train, classes
 )
 dataset_train.prepare()
 
@@ -64,7 +75,7 @@ model.load_weights(
 model.train(
     dataset_train, dataset_valid,
     learning_rate=config.LEARNING_RATE,
-    epochs=1,
+    epochs=epochs,
     layers='heads'
 )
 

@@ -1,0 +1,1 @@
+-e git+https://github.com/hachreak/Mask_RCNN.git@py2compat#egg=Mask_RCNN
