@@ -11,6 +11,17 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
 
+from . import sample_image
+
+
+def sample_image_using_masks(image, masks):
+    """Sample image using more than one mask."""
+    return sum([
+        sample_image(image, masks[:, :, i])
+        for i in range(0, masks.shape[2])
+    ])
+
+
 class CocoDataset(utils.Dataset):
 
     def load_coco(self, dataset_dir, subset, year="2017",
