@@ -166,6 +166,13 @@ def mask2image(mask):
     return mask
 
 
-def show_image(image):
+def sample_image(image, mask):
+    """Extract portion of image relating to the mask."""
+    image = image.copy()
+    image[mask == 0] = 0
+    return image
+
+
+def show(image):
     """Show an image."""
     Image.fromarray(image).show()
