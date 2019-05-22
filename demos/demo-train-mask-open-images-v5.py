@@ -66,10 +66,12 @@ dataset_train = oic.OIDataset(
 )
 dataset_train.prepare()
 
-action = 'training'
-#  action = 'inference'
+#  action = 'training'
+action = 'inference'
 
-weights = 'logs/open-images-v520190516T1742/mask_rcnn_open-images-v5_0007.h5'
+img_path = os.path.join(path, 'validation/53921fc4d72f04d6.jpg')
+#  weights = 'logs/open-images-v520190516T1742/mask_rcnn_open-images-v5_0022.h5'
+weights = 'logs/open-images-v520190516T1742/mask_rcnn_open-images-v5_0023.h5'
 #  weights = 'mask_rcnn_coco.h5'
 
 model = modellib.MaskRCNN(mode=action, config=config, model_dir=model_dir)
@@ -89,11 +91,23 @@ if action == 'training':
     )
 
 else:
-    img_path = '/media/hachreak/Magrathea/datasets/open-images-v5/validation/53921fc4d72f04d6.jpg'
     model.load_weights(weights, by_name=True)
-    res = model.detect(np.array([cv2.imread(img_path)]))
-    import ipdb
-    ipdb.set_trace()
-    print(res)
+    #  res = model.detect(np.array([cv2.imread(img_path)]))
+    import random
+    from PIL import Image
+    image_id = random.choice(dataset_valid.image_ids)
+    image, image_meta, gt_class_id, gt_bbox, gt_mask = \
+        modellib.load_image_gt(dataset_valid, config, image_id,
+                               use_mini_mask=False)
+    info = dataset_valid.image_info[image_id]
+    results = model.detect_molded(
+        np.expand_dims(image, 0), np.expand_dims(image_meta, 0), verbose=1)
+
+    mask = results[0]['masks'].astype('uint8')
+    mask = mask.reshape(mask.shape[:2])
+    mask[mask > 0] = 255
+    Image.fromarray(mask).show()
+    Image.fromarray(image).show()
+    print("class {0} - {1}".format(gt_class_id, results[0]['class_ids']))
 
 print('fine')

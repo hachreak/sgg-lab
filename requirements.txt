@@ -1,1 +1,2 @@
 -e git+https://github.com/hachreak/Mask_RCNN.git@py2compat#egg=Mask_RCNN
+#-e git+https://github.com/hachreak/keras-non-local-nets.git@package#egg=keras-non-local-nets
