@@ -5,6 +5,8 @@ import numpy as np
 import json
 import csv
 
+from PIL import Image
+
 
 def randomize(objects):
     import random
@@ -155,3 +157,15 @@ def colorize(img, rgb):
     img[2][img[2] > 0] = b
     img = np.transpose(img, (1, 2, 0))
     return img
+
+
+def mask2image(mask):
+    """Convert a binary mask to a black/white image."""
+    mask = mask.copy().astype('uint8')
+    mask[mask > 0] = 255
+    return mask
+
+
+def show_image(image):
+    """Show an image."""
+    Image.fromarray(image).show()
