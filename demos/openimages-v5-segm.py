@@ -1,6 +1,8 @@
 
 """Build training/validation file.
 
+Extract to file the subset of the image/segmentation/relationship available.
+
 Not all segmentation images has corresponding relationships and viceversa.
 """
 
