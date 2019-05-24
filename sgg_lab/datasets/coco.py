@@ -22,6 +22,10 @@ def sample_image_using_masks(image, masks):
     ])
 
 
+def join_masks(masks):
+    return np.sum(masks, axis=2)
+
+
 class CocoDataset(utils.Dataset):
 
     def load_coco(self, dataset_dir, subset, year="2017",
