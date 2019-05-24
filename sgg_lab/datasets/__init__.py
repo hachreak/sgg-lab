@@ -5,7 +5,7 @@ import numpy as np
 import json
 import csv
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 def randomize(objects):
@@ -22,8 +22,10 @@ def epochs(filenames, epochs=1, random=True):
             yield name
 
 
-def stream_batch(stream, fun, size):
+def stream_batch(stream, fun=None, size=None):
     """Create batch on the fly."""
+    fun = fun or (lambda x, y: (np.array(x), np.array(y)))
+    size = size or 5
     while True:
         batch = []
         try:
@@ -166,6 +168,13 @@ def mask2image(mask):
     return mask
 
 
+def image2mask(mask):
+    """Convert a image to a 0/1 image."""
+    mask = mask.copy().astype('uint8')
+    mask[mask > 0] = 1
+    return mask
+
+
 def sample_image(image, mask):
     """Extract portion of image relating to the mask."""
     image = image.copy()
@@ -176,3 +185,14 @@ def sample_image(image, mask):
 def show(image):
     """Show an image."""
     Image.fromarray(image).show()
+
+
+def resize(shape):
+    """Resize and mantain the aspect ratio."""
+    def f(image):
+        img = Image.fromarray(image)
+        if image.shape[0] > shape[0] or image.shape[1] > shape[1]:
+            img.thumbnail(shape)
+        pad = 0, 0, shape[0] - img.size[0], shape[1] - img.size[1]
+        return np.array(ImageOps.expand(img, pad))
+    return f
