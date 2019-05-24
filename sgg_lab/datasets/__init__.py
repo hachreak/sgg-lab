@@ -17,9 +17,25 @@ def randomize(objects):
 def epochs(filenames, epochs=1, random=True):
     """Repeat filenames epochs times."""
     for _ in range(0, epochs):
-        filenames = randomize(filenames)
+        if random:
+            filenames = randomize(filenames)
         for name in filenames:
             yield name
+
+
+def bufferize(stream, size=1):
+    """Prepare first x blocks and then return one by one."""
+    buff = []
+    for value in stream:
+        buff.append(value)
+        if len(buff) >= size:
+            # flush buffer
+            for b in buff:
+                yield b
+            buff = []
+    # flush remaining buffer
+    for b in buff:
+        yield b
 
 
 def stream_batch(stream, fun=None, size=None):
