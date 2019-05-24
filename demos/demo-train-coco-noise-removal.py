@@ -17,6 +17,8 @@ def prepare(dataset, epochs, batch_size, input_shape):
     stream = ds.stream(ds.apply_to_xn(ds.resize(input_shape[:2])), stream)
     #  stream = ds.stream(ds.apply_to_x(check), stream)
 
+    stream = ds.bufferize(stream, size=20)
+
     batch = ds.stream_batch(stream, size=batch_size)
     batch = ds.stream(ds.apply_to_y(
         lambda x: ds.mask2image(x).reshape(x.shape + (1,))), batch)
@@ -69,7 +71,7 @@ dataset_train.prepare()
 gen_train = prepare(dataset_train, epochs, batch_size, input_shape)
 
 callback = callbacks.ModelCheckpoint(
-    filepath="model-{epoch:02d}-{val_loss:.2f}.hdf5",
+    filepath="model-{epoch:02d}-{val_acc:.2f}.hdf5",
     monitor="val_acc",
     save_best_only=True, save_weights_only=False,
     mode="max", verbose=1
