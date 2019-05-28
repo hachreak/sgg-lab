@@ -1,27 +1,28 @@
 
 """Train Noise Removal on coco."""
 
-from keras import optimizers as opt, losses, callbacks
+from keras import optimizers as opt, losses, callbacks, models, layers
+from keras.applications import resnet50
 
 from sgg_lab.datasets.coco import CocoDataset, join_masks
 from sgg_lab import datasets as ds
-from sgg_lab.nets.unet import unet
 from sgg_lab.losses.focal_loss import binary_focal_loss
 
 
-def prepare(dataset, epochs, batch_size, input_shape):
+def prepare(dataset, epochs, batch_size, input_shape, output_shape):
     stream = ds.epochs(dataset.image_ids, epochs)
     stream = ds.stream(
         lambda x: (dataset.load_image(x), dataset.load_output(x)),
         stream)
-    stream = ds.stream(ds.apply_to_xn(ds.resize(input_shape[:2])), stream)
+    stream = ds.stream(ds.apply_to_x(ds.resize(input_shape)), stream)
+    stream = ds.stream(ds.apply_to_y(ds.resize(output_shape)), stream)
     #  stream = ds.stream(ds.apply_to_x(check), stream)
 
     stream = ds.bufferize(stream, size=20)
 
     batch = ds.stream_batch(stream, size=batch_size)
     batch = ds.stream(ds.apply_to_y(
-        lambda x: ds.mask2image(x).reshape(x.shape + (1,))), batch)
+        lambda x: ds.image2mask(x).reshape(x.shape + (1,))), batch)
 
     return batch
 
@@ -51,6 +52,7 @@ model_path = ''
 epochs = 100
 batch_size = 3
 input_shape = (320, 320, 3)
+output_shape = (10, 10)
 
 action = 'train'
 # action = 'evaluate'
@@ -59,7 +61,7 @@ action = 'train'
 dataset_val = NRCocoDataset()
 dataset_val.load_coco(coco_path, 'val')
 dataset_val.prepare()
-gen_val = prepare(dataset_val, epochs, batch_size, input_shape)
+gen_val = prepare(dataset_val, epochs, batch_size, input_shape, output_shape)
 
 #  fuu = next(gen_val)
 #  import ipdb; ipdb.set_trace()
@@ -68,7 +70,8 @@ gen_val = prepare(dataset_val, epochs, batch_size, input_shape)
 dataset_train = NRCocoDataset()
 dataset_train.load_coco(coco_path, 'train')
 dataset_train.prepare()
-gen_train = prepare(dataset_train, epochs, batch_size, input_shape)
+gen_train = prepare(
+    dataset_train, epochs, batch_size, input_shape, output_shape)
 
 callback = callbacks.ModelCheckpoint(
     filepath="model-{epoch:02d}-{val_acc:.2f}.hdf5",
@@ -77,7 +80,10 @@ callback = callbacks.ModelCheckpoint(
     mode="max", verbose=1
 )
 
-model = unet(input_shape=input_shape)
+#  model = unet(input_shape=input_shape)
+model = resnet50.ResNet50(include_top=False, input_shape=input_shape)
+output = layers.Conv2D(1, (1, 1), activation='sigmoid')(model.output)
+model = models.Model(inputs=model.inputs, outputs=output)
 
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
