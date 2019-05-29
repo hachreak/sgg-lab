@@ -1,0 +1,24 @@
+Epoch 1/100
+39088/39088 [==============================] - 3697s 95ms/step - loss: 0.2335 - acc: 0.8798 - val_loss: 0.2241 - val_acc: 0.8859
+
+Epoch 00001: val_acc improved from -inf to 0.88587, saving model to model-01-0.89.hdf5
+Epoch 2/100
+39088/39088 [==============================] - 3671s 94ms/step - loss: 0.2023 - acc: 0.8957 - val_loss: 0.2296 - val_acc: 0.9015
+
+Epoch 00002: val_acc improved from 0.88587 to 0.90147, saving model to model-02-0.90.hdf5
+Epoch 3/100
+39088/39088 [==============================] - 3678s 94ms/step - loss: 0.1870 - acc: 0.9043 - val_loss: 0.1982 - val_acc: 0.9042
+
+Epoch 00003: val_acc improved from 0.90147 to 0.90422, saving model to model-03-0.90.hdf5
+Epoch 4/100
+39088/39088 [==============================] - 3686s 94ms/step - loss: 0.1747 - acc: 0.9112 - val_loss: 0.1947 - val_acc: 0.8979
+
+Epoch 00004: val_acc did not improve from 0.90422
+Epoch 5/100
+39088/39088 [==============================] - 3681s 94ms/step - loss: 0.1639 - acc: 0.9174 - val_loss: 0.2032 - val_acc: 0.9039
+
+Epoch 00005: val_acc did not improve from 0.90422
+Epoch 6/100
+39088/39088 [==============================] - 3678s 94ms/step - loss: 0.1526 - acc: 0.9242 - val_loss: 0.1977 - val_acc: 0.9028
+
+Epoch 00006: val_acc did not improve from 0.90422
