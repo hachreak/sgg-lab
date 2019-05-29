@@ -14,7 +14,7 @@ model_path = None
 model_path = 'mask_rcnn_coco.h5'
 epochs = 100
 batch_size = 1
-eval_limit = None
+eval_limit = 100
 
 #  action = 'train'
 action = 'evaluate'
@@ -39,9 +39,9 @@ class CocoConfig(Config):
     # COCO has 80 classes
     NUM_CLASSES = 1 + 80
 
-    IMAGE_SHAPE = (320, 320, 3)
-    IMAGE_MIN_DIM = 320
-    IMAGE_MAX_DIM = 320
+    IMAGE_SHAPE = (640, 640, 3)
+    IMAGE_MIN_DIM = 640
+    IMAGE_MAX_DIM = 640
 
     BATCH_SIZE = batch_size
 
