@@ -1,23 +1,23 @@
 
 """Train Mask with COCO."""
 
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
-from pycocotools import mask as maskUtils
+from __future__ import print_function
 
 from mrcnn.config import Config
-from mrcnn import model as modellib, utils
+from mrcnn import model as modellib
 
-from sgg_lab.datasets.coco import CocoDataset
+from sgg_lab.datasets.coco import CocoDataset, evaluate_coco
 
 
 coco_path = '/media/hachreak/Magrathea/datasets/coco/coco'
-model_path = ''
+model_path = None
+model_path = 'mask_rcnn_coco.h5'
 epochs = 100
 batch_size = 1
+eval_limit = None
 
-action = 'train'
-# action = 'evaluate'
+#  action = 'train'
+action = 'evaluate'
 
 
 class CocoConfig(Config):
@@ -63,6 +63,9 @@ if action == 'train':
     if model_path:
         print("Loading weights ", model_path)
         model.load_weights(model_path, by_name=True)
+    else:
+        print("Loading imagenet weights ")
+        model.load_weights(model.get_imagenet_weights(), by_name=True)
 
     # train dataset
     dataset_train = CocoDataset()
@@ -81,3 +84,21 @@ if action == 'train':
         learning_rate=config.LEARNING_RATE,
         epochs=epochs, layers='all'
     )
+else:
+    config = InferenceConfig()
+    model = modellib.MaskRCNN(mode="inference", config=config,
+                              model_dir='logs')
+
+    if model_path:
+        print("Loading weights ", model_path)
+        model.load_weights(model_path, by_name=True)
+
+    # validation dataset
+    dataset_val = CocoDataset()
+    coco = dataset_val.load_coco(coco_path, 'val', return_coco=True)
+    dataset_val.prepare()
+
+    print("Running COCO mask evaluation on {} images.".format(eval_limit))
+    evaluate_coco(model, dataset_val, coco, "segm", limit=eval_limit)
+    print("Running COCO bbox evaluation on {} images.".format(eval_limit))
+    evaluate_coco(model, dataset_val, coco, "bbox", limit=eval_limit)

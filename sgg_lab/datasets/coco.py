@@ -10,7 +10,6 @@ from pycocotools import mask as maskUtils
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-
 from . import sample_image
 
 
