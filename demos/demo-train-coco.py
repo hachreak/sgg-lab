@@ -11,13 +11,19 @@ from sgg_lab.datasets.coco import CocoDataset, evaluate_coco
 
 coco_path = '/media/hachreak/Magrathea/datasets/coco/coco'
 model_path = None
-model_path = 'mask_rcnn_coco.h5'
+#  model_path = 'logs/coco20190529T1216/mask_rcnn_coco_0033.h5'
 epochs = 100
 batch_size = 1
 eval_limit = 100
 
-#  action = 'train'
-action = 'evaluate'
+action = 'train'
+#  action = 'evaluate'
+train_stage_1 = True
+train_stage_2 = True
+train_stage_3 = True
+epochs_stage_1 = 40
+epochs_stage_2 = 120
+epochs_stage_3 = 160
 
 
 class CocoConfig(Config):
@@ -77,13 +83,33 @@ if action == 'train':
     dataset_val.load_coco(coco_path, 'val')
     dataset_val.prepare()
 
-    print('train..')
-    model.train(
-        dataset_train,
-        dataset_val,
-        learning_rate=config.LEARNING_RATE,
-        epochs=epochs, layers='all'
-    )
+    if train_stage_1:
+        print('train heads..')
+        model.train(
+            dataset_train,
+            dataset_val,
+            learning_rate=config.LEARNING_RATE,
+            epochs=epochs_stage_1, layers='heads'
+        )
+
+    if train_stage_2:
+        print('fine tuning resnet stage 4 to up..')
+        model.train(
+            dataset_train,
+            dataset_val,
+            learning_rate=config.LEARNING_RATE,
+            epochs=epochs_stage_2, layers='4+'
+        )
+
+    if train_stage_3:
+        print('fine tuning all layers..')
+        model.train(
+            dataset_train,
+            dataset_val,
+            learning_rate=config.LEARNING_RATE / 10.,
+            epochs=epochs_stage_3, layers='all'
+        )
+
 else:
     config = InferenceConfig()
     model = modellib.MaskRCNN(mode="inference", config=config,
