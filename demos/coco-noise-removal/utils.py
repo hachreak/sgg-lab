@@ -53,3 +53,8 @@ def get_img_cleaned(model, imgs):
     imgs = imgs.copy()
     imgs[masks == 0] = 0
     return imgs
+
+
+def mul_shape(shape, mult):
+    """Multiply shape."""
+    return [s*mult for s in shape]
