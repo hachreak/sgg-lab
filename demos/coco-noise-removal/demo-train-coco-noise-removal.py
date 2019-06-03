@@ -3,8 +3,36 @@
 
 import utils as u
 
-from keras import optimizers as opt, losses, callbacks, models, layers
+from keras import optimizers as opt, callbacks, models, layers
+from keras.applications import resnet50
+
 from sgg_lab.losses.focal_loss import binary_focal_loss
+from sgg_lab import datasets as ds
+
+
+def get_model(input_shape):
+    model = resnet50.ResNet50(include_top=False, input_shape=input_shape)
+    output = layers.Conv2D(1, (1, 1), activation='sigmoid')(model.output)
+    return models.Model(inputs=model.inputs, outputs=output)
+
+
+def prepare(dataset, epochs, batch_size, input_shape, output_shape):
+    stream = ds.epochs(dataset.image_ids, epochs)
+    #  stream = ds.stream(check, stream)
+    stream = ds.stream(
+        lambda x: (dataset.load_image(x), dataset.load_output(x)),
+        stream)
+    stream = ds.stream(ds.apply_to_x(ds.resize(input_shape)), stream)
+    stream = ds.stream(ds.apply_to_y(ds.resize(output_shape)), stream)
+    #  stream = ds.stream(ds.apply_to_x(check), stream)
+
+    stream = ds.bufferize(stream, size=20)
+
+    batch = ds.stream_batch(stream, size=batch_size)
+    batch = ds.stream(ds.apply_to_y(
+        lambda x: ds.image2mask(x).reshape(x.shape + (1,))), batch)
+
+    return batch
 
 
 coco_path = '/media/hachreak/Magrathea/datasets/coco/coco'
@@ -18,16 +46,15 @@ action = 'train'
 # action = 'evaluate'
 
 dataset_val = u.get_dataset(coco_path, 'val')
-gen_val = u.prepare(dataset_val, epochs, batch_size, input_shape, output_shape)
+gen_val = prepare(dataset_val, epochs, batch_size, input_shape, output_shape)
 
-fuu = next(gen_val)
-model = u.load_model('./model-03-0.90.hdf5')
-res = u.get_img_cleaned(model, fuu[0])
-import ipdb; ipdb.set_trace()
+#  fuu = next(gen_val)
+#  model = u.load_model('./model-03-0.90.hdf5')
+#  res = u.get_img_cleaned(model, fuu[0])
 
 # train dataset
 dataset_train = u.get_dataset(coco_path, 'train')
-gen_train = u.prepare(
+gen_train = prepare(
     dataset_train, epochs, batch_size, input_shape, output_shape)
 
 callback = callbacks.ModelCheckpoint(
@@ -38,7 +65,7 @@ callback = callbacks.ModelCheckpoint(
 )
 
 #  model = unet(input_shape=input_shape)
-model = u.get_model(input_shape)
+model = get_model(input_shape)
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
     loss=binary_focal_loss(),
