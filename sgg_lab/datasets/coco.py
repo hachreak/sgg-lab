@@ -67,6 +67,7 @@ class CocoDataset(utils.Dataset):
             self.add_class("coco", i, coco.loadCats(i)[0]["name"])
 
         # Add images
+        self._img_filenames = []
         for i in image_ids:
             self.add_image(
                 "coco", image_id=i,
@@ -75,6 +76,7 @@ class CocoDataset(utils.Dataset):
                 height=coco.imgs[i]["height"],
                 annotations=coco.loadAnns(coco.getAnnIds(
                     imgIds=[i], catIds=class_ids, iscrowd=None)))
+            self._img_filenames.append(coco.imgs[i]['file_name'])
         if return_coco:
             return coco
 
