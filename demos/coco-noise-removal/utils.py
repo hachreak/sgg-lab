@@ -16,7 +16,7 @@ class NRCocoDataset(CocoDataset):
         masks, cls = self.load_mask(image_id)
         mask = np.zeros(masks.shape[:2] + (self.num_classes,))
         for i in range(0, masks.shape[2]):
-            m = masks[:, :, i].copy().astype('uint8')
+            m = masks[:, :, i]
             mask[m > 0] += utils.to_categorical(cls[i], self.num_classes)
         return mask
 
@@ -42,9 +42,10 @@ def check(x):
     return x
 
 
-def get_dataset(coco_path, type_):
+def get_dataset(coco_path, type_, cocodataset=None):
+    cocodataset = cocodataset or NRCocoDataset
     # validation dataset
-    dataset = NRCocoDataset()
+    dataset = cocodataset()
     dataset.load_coco(coco_path, type_)
     dataset.prepare()
     return dataset

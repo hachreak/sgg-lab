@@ -43,19 +43,18 @@ def stream_batch(stream, fun=None, size=None):
     fun = fun or (lambda x, y: (np.array(x), np.array(y)))
     size = size or 5
     while True:
-        batch = []
+        x = []
+        y = []
         try:
-            x = []
-            y = []
             for i in range(size):
                 x_value, y_value = next(stream)
                 x.append(x_value)
                 y.append(y_value)
             yield fun(x, y)
         except StopIteration:
-            if not batch:
+            if not x:
                 raise StopIteration
-            yield batch
+            yield fun(x, y)
 
 
 def pack_elements(x, y):
