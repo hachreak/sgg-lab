@@ -10,7 +10,7 @@ from keras import optimizers as opt, models, layers
 from keras.applications import resnet50
 
 from sgg_lab import datasets as ds
-from sgg_lab.losses.focal_loss import binary_focal_loss, categorical_focal_loss
+from sgg_lab.losses.focal_loss import binary_focal_loss
 from sgg_lab.callbacks import ModelSaveBestAvgAcc
 
 
@@ -20,8 +20,11 @@ def load_masks(dataset, base_path):
         file_path = '{0}.npy'.format(dataset._img_filenames[image_id])
         path = os.path.join(base_path, file_path)
         y = np.load(path, allow_pickle=True)
-        #  y[0] = y[0].reshape(y[0].shape + (1,))
-        return y
+        ret = [y[0][:, :, i].reshape(y[0].shape[:2] + (1,))
+               for i in range(0, y[0].shape[2])]
+        for i in range(1, len(y)):
+            ret.append(y[i])
+        return ret
     return f
 
 
@@ -53,10 +56,13 @@ def get_model(input_shape, num_classes):
     add2 = layers.Add()([last_40x40, upsample2])
     output3 = layers.Conv2D(1, (1, 1), activation='sigmoid')(add2)
 
-    output4 = layers.Conv2D(num_classes, (1, 1), activation='softmax')(add2)
+    output4 = [
+        layers.Conv2D(1, (1, 1), activation='sigmoid')(add2)
+        for i in range(0, num_classes)
+    ]
 
     return models.Model(
-        inputs=model.inputs, outputs=[output4, output3, output2, output])
+        inputs=model.inputs, outputs=output4 + [output3, output2, output])
 
 
 #  coco_path = '/media/hachreak/Magrathea/datasets/coco/resize_320x320'
@@ -92,12 +98,17 @@ callback = ModelSaveBestAvgAcc(
     verbose=True
 )
 
+losses = []
+for i in range(0, dataset_val.num_classes):
+    losses.append(binary_focal_loss(gamma=2., alpha=0.99995))
+for i in range(0, 3):
+    losses.append(binary_focal_loss(gamma=2., alpha=0.8))
+
 #  model = unet(input_shape=input_shape)
 model = get_model(input_shape, dataset_val.num_classes)
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
-    loss=[categorical_focal_loss(), binary_focal_loss(),
-          binary_focal_loss(), binary_focal_loss()],
+    loss=losses,
     metrics=['accuracy']
 )
 
