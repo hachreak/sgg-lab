@@ -100,7 +100,7 @@ callback = ModelSaveBestAvgAcc(
 
 losses = []
 for i in range(0, dataset_val.num_classes):
-    losses.append(binary_focal_loss(gamma=2., alpha=0.99995))
+    losses.append(binary_focal_loss(gamma=2., alpha=0.9995))
 for i in range(0, 3):
     losses.append(binary_focal_loss(gamma=2., alpha=0.8))
 
@@ -122,6 +122,7 @@ model.fit_generator(
     validation_data=gen_val,
     validation_steps=len(dataset_val.image_ids) // batch_size,
     callbacks=[callback],
+    verbose=2
 )
 
 print('fine')
