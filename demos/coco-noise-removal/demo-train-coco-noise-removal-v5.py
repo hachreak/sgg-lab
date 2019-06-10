@@ -69,7 +69,6 @@ def get_model(input_shape, num_classes):
 def get_class_masks(model, gen_dataset):
     """Get class masks y_true and y_pred."""
     from sklearn.metrics import confusion_matrix
-    import ipdb; ipdb.set_trace()
     cm = np.zeros((2, 2))
     for x, y_true in gen_dataset:
         y_true = np.array(y_true[:81]).flatten()
@@ -79,8 +78,7 @@ def get_class_masks(model, gen_dataset):
         cm_res = confusion_matrix(y_true, y_pred)
         if cm_res.shape == (2, 2):
             cm += cm_res
-    import ipdb; ipdb.set_trace()
-    print('ok')
+    return cm
 
 
 #  coco_path = '/media/hachreak/Magrathea/datasets/coco/resize_320x320'
@@ -92,21 +90,18 @@ input_shape = (320, 320, 3)
 output_shape = (10, 10)
 model_path = './model-52-0.92.hdf5'
 
-#  action = 'train'
-action = 'evaluate'
-
-dataset_val = u.get_dataset(coco_path, 'val')
-gen_val = prepare(
-    dataset_val, epochs, batch_size, os.path.join(coco_path, 'val_output')
-)
-
-#  fuu = next(gen_val)
-#  import ipdb; ipdb.set_trace()
-#  model = u.load_model('./model-03-0.90.hdf5')
-#  res = u.get_img_cleaned(model, fuu[0])
-#  import ipdb; ipdb.set_trace()
+action = 'train'
+#  action = 'evaluate'
 
 if action == 'train':
+    dataset_val = u.get_dataset(coco_path, 'val')
+    gen_val = prepare(
+        dataset_val, epochs, batch_size, os.path.join(coco_path, 'val_output')
+    )
+
+    #  fuu = next(gen_val)
+    #  import ipdb; ipdb.set_trace()
+
     # train dataset
     dataset_train = u.get_dataset(coco_path, 'train')
     gen_train = prepare(
@@ -144,6 +139,13 @@ if action == 'train':
         verbose=2
     )
 else:
+    dataset_val = u.get_dataset(coco_path, 'val')
+    gen_val = prepare(
+        dataset_val, 1, batch_size,
+        os.path.join(coco_path, 'val_output')
+    )
+
     model = u.load_model(model_path)
-    get_class_masks(model, gen_val)
+    print(get_class_masks(model, gen_val))
+
 print('fine')
