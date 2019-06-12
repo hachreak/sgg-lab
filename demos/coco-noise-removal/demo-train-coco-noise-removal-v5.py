@@ -115,7 +115,7 @@ if action == 'train':
     )
 
     losses = []
-    for i in range(0, dataset_val.num_classes) + 3:
+    for i in range(0, dataset_val.num_classes + 3):
         losses.append(binary_focal_loss(gamma=2.))
 
     #  model = unet(input_shape=input_shape)
@@ -136,7 +136,7 @@ if action == 'train':
         validation_data=gen_val,
         validation_steps=len(dataset_val.image_ids) // batch_size,
         callbacks=[callback],
-        verbose=2
+        verbose=1
     )
 else:
     dataset_val = u.get_dataset(coco_path, 'val')

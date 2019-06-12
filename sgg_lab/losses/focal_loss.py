@@ -113,7 +113,7 @@ def adamptive_binary_focal_loss(gamma=2.0):
         alpha -- 0.25 as mentioned in the paper
     """
     def focal_loss(y_true, y_pred):
-        alpha = count(y_true, 1) / count_all(y_true)
+        alpha = 1. - (count(y_true, 1) / count_all(y_true))
         # Define epsilon so that the backpropagation will not result in NaN
         # for 0 divisor case
         epsilon = K.epsilon()
