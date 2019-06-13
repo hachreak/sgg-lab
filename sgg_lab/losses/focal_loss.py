@@ -71,8 +71,6 @@ def binary_focal_loss(gamma=2.0, alpha=0.25):
         # Define epsilon so that the backpropagation will not result in NaN
         # for 0 divisor case
         epsilon = K.epsilon()
-        # Add the epsilon to prediction value
-        #y_pred = y_pred + epsilon
         # Clip the prediciton value
         y_pred = K.clip(y_pred, epsilon, 1.0-epsilon)
         # Calculate p_t
