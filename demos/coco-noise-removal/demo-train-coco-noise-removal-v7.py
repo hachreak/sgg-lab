@@ -44,18 +44,20 @@ def prepare(dataset, epochs, batch_size, input_shape, output_shape):
 
 
 def mul_layer(back_layer, last):
-    last_20x20 = back_layer.output
+    back = back_layer.output
     upsample = layers.UpSampling2D((2, 2))(last)
-    mul = layers.Multiply()([last_20x20, upsample])
-    return layers.Conv2D(1, (1, 1), activation='sigmoid')(mul)
+    to1024 = layers.Conv2D(
+        int(back.shape[3]), (1, 1), activation='relu')(upsample)
+    mul = layers.Multiply()([back, to1024])
+    return mul, layers.Conv2D(1, (1, 1), activation='sigmoid')(mul)
 
 
 def get_model(input_shape):
     model = resnet50.ResNet50(include_top=False, input_shape=input_shape)
     output = layers.Conv2D(1, (1, 1), activation='sigmoid')(model.output)
 
-    output2 = mul_layer(model.get_layer('activation_40'), output)
-    output3 = mul_layer(model.get_layer('activation_22'), output2)
+    mul2, output2 = mul_layer(model.get_layer('activation_40'), model.output)
+    mul3, output3 = mul_layer(model.get_layer('activation_22'), mul2)
 
     return models.Model(
         inputs=model.inputs, outputs=[output3, output2, output])
@@ -71,6 +73,7 @@ output_shape = (10, 10)
 action = 'train'
 # action = 'evaluate'
 
+# validation dataset
 dataset_val = u.get_dataset(coco_path, 'val')
 gen_val = prepare(dataset_val, epochs, batch_size, input_shape, output_shape)
 
