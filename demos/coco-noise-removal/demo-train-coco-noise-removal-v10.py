@@ -3,13 +3,14 @@
 
 import utils as u
 
+import keras_metrics as km
 from keras import optimizers as opt, models, layers
 from keras.applications import resnet50
 
 from sgg_lab import datasets as ds
 from sgg_lab.losses.focal_loss import \
     adamptive_binary_focal_loss as binary_focal_loss
-from sgg_lab.callbacks import ModelSaveBestAvgAcc
+from sgg_lab.callbacks import ModelSaveBestAvgAcc, filter_val_f1score
 
 
 def resize_all(output_shape):
@@ -96,8 +97,8 @@ gen_train = prepare(
     dataset_train, epochs, batch_size, input_shape, output_shape)
 
 callback = ModelSaveBestAvgAcc(
-    filepath="model-{epoch:02d}-{acc:.2f}.hdf5",
-    verbose=True
+    filepath="model-{epoch:02d}-{avgacc:.2f}.hdf5",
+    verbose=True, cond=filter_val_f1score
 )
 
 losses = []
@@ -108,7 +109,8 @@ model = get_model(input_shape)
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
     loss=losses,
-    metrics=['accuracy']
+    metrics=['accuracy', km.binary_precision(),
+             km.binary_recall(), km.binary_f1_score()]
 )
 
 model.summary()
