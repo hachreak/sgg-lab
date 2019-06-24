@@ -9,9 +9,10 @@ from keras import activations as act
 
 class MaskConv(Conv2D):
 
-    def __init__(self, **kwargs):
-        self._output_dim = kwargs['filters']
-        super(MaskConv, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        self._output_dim = kwargs['filters'] \
+            if 'filters' in kwargs else args[1]
+        super(MaskConv, self).__init__(*args, **kwargs)
 
     def build(self, input_shape):
         """Build layer."""
