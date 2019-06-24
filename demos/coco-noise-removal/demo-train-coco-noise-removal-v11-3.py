@@ -9,7 +9,7 @@ from keras.applications import resnet50
 
 from sgg_lab import datasets as ds
 from sgg_lab.losses.focal_loss import \
-    adamptive_binary_focal_loss as binary_focal_loss
+    adaptive_binary_focal_loss as binary_focal_loss
 from sgg_lab.callbacks import ModelSaveBestAvgAcc, filter_val_f1score
 from sgg_lab.layers.gaussianconv import GaussianConv2D as Conv2D
 

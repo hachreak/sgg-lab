@@ -90,7 +90,7 @@ def binary_focal_loss(gamma=2.0, alpha=0.25):
     return focal_loss
 
 
-def adamptive_binary_focal_loss(gamma=2.0):
+def adaptive_binary_focal_loss(gamma=2.0):
     """
     Implementation of Focal Loss from the paper in multiclass classification
     Formula:
