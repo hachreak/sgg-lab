@@ -27,6 +27,11 @@ def join_masks(masks):
 
 class CocoDataset(utils.Dataset):
 
+    def get_class_ids(self, image_id):
+        """Get classes inside image."""
+        return [self.map_source_class_id("coco.{}".format(a['category_id']))
+                for a in self.image_info[image_id]['annotations']]
+
     def load_coco(self, dataset_dir, subset, year="2017",
                   class_ids=None, class_map=None, return_coco=False):
         """Load a subset of the COCO dataset.
