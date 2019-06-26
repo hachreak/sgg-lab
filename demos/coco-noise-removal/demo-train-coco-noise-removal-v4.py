@@ -6,6 +6,7 @@ import utils as u
 import numpy as np
 import os
 
+import keras_metrics as km
 from keras import optimizers as opt, models, layers
 from keras.applications import resnet50
 
@@ -109,7 +110,7 @@ model = get_model(input_shape, dataset_val.num_classes)
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
     loss=losses,
-    metrics=['accuracy']
+    metrics=['accuracy', km.binary_f1_score()]
 )
 
 model.summary()
@@ -122,7 +123,7 @@ model.fit_generator(
     validation_data=gen_val,
     validation_steps=len(dataset_val.image_ids) // batch_size,
     callbacks=[callback],
-    verbose=2
+    verbose=1
 )
 
 print('fine')

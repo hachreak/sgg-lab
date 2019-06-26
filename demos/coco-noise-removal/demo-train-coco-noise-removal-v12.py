@@ -4,11 +4,11 @@
 import utils as u
 
 import numpy as np
-import keras_metrics as km
 from keras import optimizers as opt, models, layers
 from keras.applications import resnet50
 #  from joblib import parallel_backend, Parallel, delayed
 
+from sgg_lab.metrics import f1score
 from sgg_lab import datasets as ds
 from sgg_lab.losses.focal_loss import \
     adaptive_binary_focal_loss as binary_focal_loss
@@ -46,7 +46,7 @@ def prepare(dataset, epochs, batch_size, input_shape, output_shape):
 
     def adapt_y(x, y):
         y = np.array(y).transpose((3, 0, 1, 2))
-        y = y.reshape(y.shape + (1,))
+        y = y.reshape(y.shape + (1,)).astype('int32')
         return np.array(x), [v for v in y]
 
     batch = ds.stream_batch(stream, size=batch_size, fun=adapt_y)
@@ -117,8 +117,7 @@ model = get_model(input_shape, dataset_val.num_classes)
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
     loss=losses,
-    metrics=['accuracy', km.binary_precision(), km.binary_recall(),
-             km.binary_f1_score(), km.false_positive()]
+    metrics=['accuracy', f1score]
 )
 
 model.summary()
