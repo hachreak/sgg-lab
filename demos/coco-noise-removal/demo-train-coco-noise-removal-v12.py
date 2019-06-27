@@ -3,6 +3,7 @@
 
 import utils as u
 
+import os
 import numpy as np
 from keras import optimizers as opt, models, layers
 from keras.applications import resnet50
@@ -12,44 +13,37 @@ from sgg_lab.metrics import f1score
 from sgg_lab import datasets as ds
 from sgg_lab.losses.focal_loss import \
     adaptive_binary_focal_loss as binary_focal_loss
-from sgg_lab.callbacks import ModelSaveBestAvgAcc, filter_val_f1score
+from sgg_lab.callbacks import ModelSaveBestAvgAcc, filter_val
 from sgg_lab.layers.gaussianconv import GaussianConv2D as Conv2D
 
 
-def imageid2categoricalpixel(dataset, input_shape):
+def load_masks(dataset, base_path):
     """Convert image_id to categorical pixel."""
-    resizer = ds.resize(input_shape)
-
     def f(image_id):
-        cat = dataset.to_categorical(image_id)
-        # expand values to be better separable after resizing
-        cat[cat > 0] = 255
-        #
-        class_ids = set(dataset.get_class_ids(image_id))
-        result = np.zeros(list(input_shape[:2]) + [cat.shape[2]])
-        for i in class_ids:
-            result[:, :, i] = resizer(cat[:, :, i])
-        # fix value generated from resizing
-        result[result <= 127] = 0
-        result[result > 127] = 1
-        return result
+        file_path = '{0}.npz'.format(dataset._img_filenames[image_id])
+        path = os.path.join(base_path, file_path)
+        y = np.load(path, allow_pickle=True)
+        return y
     return f
 
 
-def prepare(dataset, epochs, batch_size, input_shape, output_shape):
-    i2c = imageid2categoricalpixel(dataset, input_shape)
+def fix_y(y):
+    y = [v['arr_0'] for v in y]
+    return [v for v in np.array(y).transpose((1, 0, 2, 3, 4))]
+
+
+def prepare(dataset, epochs, batch_size, input_shape, base_path):
+    lm = load_masks(dataset, base_path)
     stream = ds.epochs(dataset.image_ids, epochs)
     stream = ds.stream(
-        lambda x: (dataset.load_image(x), i2c(x)),
+        lambda x: (dataset.load_image(x), lm(x)),
         stream)
     stream = ds.stream(ds.apply_to_x(ds.resize(input_shape)), stream)
 
-    def adapt_y(x, y):
-        y = np.array(y).transpose((3, 0, 1, 2))
-        y = y.reshape(y.shape + (1,)).astype('int32')
-        return np.array(x), [v for v in y]
-
-    batch = ds.stream_batch(stream, size=batch_size, fun=adapt_y)
+    batch = ds.stream_batch(
+        stream, size=batch_size,
+        fun=lambda x, y: (np.array(x), fix_y(y))
+    )
 
     return batch
 
@@ -80,7 +74,7 @@ def get_model(input_shape, num_classes):
     return models.Model(inputs=model.inputs, outputs=output7)
 
 
-coco_path = '/media/hachreak/Magrathea/datasets/coco/coco'
+coco_path = '/media/hachreak/Magrathea/datasets/coco/v12_resize_320x320'
 model_path = ''
 epochs = 100
 batch_size = 3
@@ -92,7 +86,9 @@ action = 'train'
 
 # validation dataset
 dataset_val = u.get_dataset(coco_path, 'val')
-gen_val = prepare(dataset_val, epochs, batch_size, input_shape, output_shape)
+gen_val = prepare(
+    dataset_val, epochs, batch_size, input_shape,
+    os.path.join(coco_path, 'val_output'))
 
 #  fuu = next(gen_val)
 #  import ipdb; ipdb.set_trace()
@@ -100,11 +96,12 @@ gen_val = prepare(dataset_val, epochs, batch_size, input_shape, output_shape)
 # train dataset
 dataset_train = u.get_dataset(coco_path, 'train')
 gen_train = prepare(
-    dataset_train, epochs, batch_size, input_shape, output_shape)
+    dataset_train, epochs, batch_size, input_shape,
+    os.path.join(coco_path, 'train_output'))
 
 callback = ModelSaveBestAvgAcc(
     filepath="model-{epoch:02d}-{avgacc:.2f}.hdf5",
-    verbose=True, cond=filter_val_f1score
+    verbose=True, cond=filter_val('fmeasure')
 )
 
 losses = []
@@ -112,7 +109,6 @@ for i in range(0, dataset_val.num_classes):
     losses.append(binary_focal_loss(gamma=2.))
 
 model = get_model(input_shape, dataset_val.num_classes)
-#  import ipdb; ipdb.set_trace()
 
 model.compile(
     optimizer=opt.Adam(lr=1e-4),

@@ -11,6 +11,12 @@ def avg_logs(logs, filter_cond):
     return np.average([v for k, v in logs.items() if filter_cond(k)])
 
 
+def filter_val(how_end):
+    def f(l):
+        return l.startswith('val_') and l.endswith(how_end)
+    return f
+
+
 def filter_val_accs(l):
     """Filter condition: only validation accuracy."""
     return l.startswith('val_') and l.endswith('acc')
