@@ -7,14 +7,15 @@ import os
 import numpy as np
 from keras import optimizers as opt, models, layers
 from keras.applications import resnet50
+from keras.layers import Conv2D
 #  from joblib import parallel_backend, Parallel, delayed
 
-from sgg_lab.metrics import f1score
+from sgg_lab.metrics import f1score, precision, recall
 from sgg_lab import datasets as ds
 from sgg_lab.losses.focal_loss import \
     adaptive_binary_focal_loss as binary_focal_loss
 from sgg_lab.callbacks import ModelSaveBestAvgAcc, filter_val
-from sgg_lab.layers.gaussianconv import GaussianConv2D as Conv2D
+#  from sgg_lab.layers.gaussianconv import GaussianConv2D as Conv2D
 
 
 def load_masks(dataset, base_path):
@@ -108,12 +109,13 @@ losses = []
 for i in range(0, dataset_val.num_classes):
     losses.append(binary_focal_loss(gamma=2.))
 
+#  import ipdb; ipdb.set_trace()
 model = get_model(input_shape, dataset_val.num_classes)
 
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
     loss=losses,
-    metrics=['accuracy', f1score]
+    metrics=['accuracy', f1score, precision, recall]
 )
 
 model.summary()
