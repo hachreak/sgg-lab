@@ -65,17 +65,17 @@ def get_model(input_shape, num_classes):
     mul3 = mul_layer(model.get_layer('activation_22'), mul2)
     mul4 = mul_layer(model.get_layer('activation_10'), mul3)
     mul5 = mul_layer(model.get_layer('activation_1'), mul4)
-    mul6 = mul_layer(model.get_layer('input_1'), mul5)
+    #  mul6 = mul_layer(model.get_layer('input_1'), mul5)
 
     output7 = [
-        layers.Conv2D(1, (1, 1), activation='sigmoid')(mul6)
+        layers.Conv2D(1, (1, 1), activation='sigmoid')(mul5)
         for i in range(0, num_classes)
     ]
 
     return models.Model(inputs=model.inputs, outputs=output7)
 
 
-coco_path = '/media/hachreak/Magrathea/datasets/coco/v12_resize_320x320'
+coco_path = '/media/hachreak/Magrathea/datasets/coco/v12-2_resize_320x320'
 model_path = ''
 epochs = 100
 batch_size = 3
@@ -107,7 +107,7 @@ callback = ModelSaveBestAvgAcc(
 
 losses = []
 for i in range(0, dataset_val.num_classes):
-    losses.append(binary_focal_loss(gamma=3.))
+    losses.append(binary_focal_loss(gamma=2.))
 
 #  import ipdb; ipdb.set_trace()
 model = get_model(input_shape, dataset_val.num_classes)
@@ -115,7 +115,7 @@ model = get_model(input_shape, dataset_val.num_classes)
 model.compile(
     optimizer=opt.Adam(lr=1e-4),
     loss=losses,
-    metrics=['accuracy', f1score, precision, recall]
+    metrics=['accuracy', f1score]
 )
 
 model.summary()
