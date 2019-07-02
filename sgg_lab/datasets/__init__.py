@@ -208,6 +208,17 @@ def resize(shape):
         img = Image.fromarray(image)
         if image.shape[0] > shape[0] or image.shape[1] > shape[1]:
             img.thumbnail(shape)
-        pad = 0, 0, shape[0] - img.size[0], shape[1] - img.size[1]
+
+        x_pad = shape[0] - img.size[0]
+        y_pad = shape[1] - img.size[1]
+
+        x_pad_delta = x_pad // 2
+        x_pad_rest = x_pad % 2
+        y_pad_delta = y_pad // 2
+        y_pad_rest = y_pad % 2
+
+        pad = x_pad_delta, y_pad_delta, \
+            x_pad_delta + x_pad_rest, y_pad_delta + y_pad_rest
+
         return np.array(ImageOps.expand(img, pad))
     return f
