@@ -116,8 +116,9 @@ class CocoDataset(utils.Dataset):
                     continue
                 # Is it a crowd? If so, use a negative class ID.
                 if annotation['iscrowd']:
+                    # FIX Disable negative values
                     # Use negative class ID for crowds
-                    class_id *= -1
+                    #  class_id *= -1
                     # For crowd masks, annToMask() sometimes returns a mask
                     # smaller than the given dimensions. If so, resize it.
                     if m.shape[0] != image_info["height"] \
