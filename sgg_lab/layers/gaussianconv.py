@@ -73,3 +73,33 @@ class KDConv2D(Conv2D):
         }
         base_config = super(KDConv2D, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+class KDDense(Dense):
+
+    """Kernel Dropout Dense."""
+
+    def __init__(self, rate=None, seed=None, *args, **kwargs):
+        self._rate = rate or 0.3
+        self._seed = seed
+        super(KDDense, self).__init__(*args, **kwargs)
+
+    def call(self, inputs, training=None):
+        noise_shape = K.shape(self.kernel)
+
+        def dropped_inputs():
+            return K.dropout(
+                self.kernel, self._rate, noise_shape, seed=self._seed)
+
+        self.kernel = K.in_train_phase(
+            dropped_inputs, self.kernel, training=training)
+
+        return super(KDDense, self).call(inputs)
+
+    def get_config(self):
+        config = {
+            'rate': self._rate,
+            'seed': self._seed
+        }
+        base_config = super(KDDense, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
