@@ -22,6 +22,9 @@ from sgg_lab.callbacks import ModelSaveBestAvgAcc, filter_val
 def load_masks(dataset, base_path):
     """Convert image_id to categorical pixel."""
     def f(image_id):
+        _, cls = dataset.load_mask(image_id)
+        print(image_id)
+        print(cls)
         file_path = '{0}.npz'.format(dataset._img_filenames[image_id])
         path = os.path.join(base_path, file_path)
         y = np.load(path, allow_pickle=True)
@@ -74,6 +77,10 @@ def get_model(input_shape, num_classes):
     return models.Model(inputs=model.inputs, outputs=output7)
 
 
+def evaluate(y_true, y_pred):
+    return 1 - mse(y_true, y_pred)
+
+
 coco_path = '/media/hachreak/Magrathea/datasets/coco/v14_resize_320x320'
 model_path = ''
 epochs = 100
@@ -90,8 +97,12 @@ gen_val = prepare(
     dataset_val, epochs, batch_size, input_shape,
     os.path.join(coco_path, 'val_output'))
 
-#  fuu = next(gen_val)
-#  import ipdb; ipdb.set_trace()
+fuu = next(gen_val)
+#  from keras.models import load_model
+#  model = load_model(
+#      '_demo-v14-model-09-0.97.hdf5',
+#      custom_objects={'precision': precision, 'evaluate': evaluate})
+import ipdb; ipdb.set_trace()
 
 # train dataset
 dataset_train = u.get_dataset(coco_path, 'train')
@@ -103,10 +114,6 @@ callback = ModelSaveBestAvgAcc(
     filepath="model-{epoch:02d}-{avgacc:.2f}.hdf5",
     verbose=True, cond=filter_val('evaluate')
 )
-
-
-def evaluate(y_true, y_pred):
-    return 1 - mse(y_true, y_pred)
 
 
 losses = []
